@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kegiatan — PMR Wira SMK IBG 3</title>
+  <link rel="stylesheet" href="css/main.css" />
+  <style>
+    /* ── Kartu Kegiatan (Grid View) ── */
+    .kegiatan-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 18px;
+    }
+
+    .kegiatan-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--gray-100);
+      box-shadow: var(--shadow-sm);
+      overflow: hidden;
+      transition: transform var(--transition), box-shadow var(--transition);
+      animation: statFadeIn 0.3s ease both;
+    }
+
+    .kegiatan-card:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow);
+    }
+
+    .kegiatan-card-header {
+      padding: 16px 20px 12px;
+      border-bottom: 1px solid var(--gray-100);
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .kegiatan-card-title {
+      font-family: var(--font-display);
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--gray-900);
+      line-height: 1.3;
+      flex: 1;
+    }
+
+    .kegiatan-card-body {
+      padding: 14px 20px;
+    }
+
+    .kegiatan-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-bottom: 12px;
+    }
+
+    .kegiatan-meta span {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .kegiatan-desc {
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      margin-bottom: 14px;
+    }
+
+    .kegiatan-card-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--gray-100);
+      display: flex;
+      gap: 6px;
+      justify-content: flex-end;
+    }
+
+    /* Countdown chip */
+    .countdown-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 700;
+      background: var(--red-50);
+      color: var(--red-600);
+      margin-top: 8px;
+    }
+
+    /* View toggle */
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      background: var(--gray-100);
+      padding: 4px;
+      border-radius: var(--radius);
+    }
+
+    .view-btn {
+      background: none;
+      border: none;
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--gray-500);
+      transition: all var(--transition);
+    }
+
+    .view-btn.active {
+      background: var(--white);
+      color: var(--gray-800);
+      box-shadow: var(--shadow-sm);
+      font-weight: 600;
+    }
+
+    /* Tab status */
+    .status-tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 2px solid var(--gray-100);
+      margin-bottom: 20px;
+    }
+
+    .status-tab {
+      padding: 10px 20px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gray-500);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      margin-bottom: -2px;
+      transition: all var(--transition);
+    }
+
+    .status-tab.active {
+      color: var(--red-600);
+      border-bottom-color: var(--red-600);
+    }
+
+    @media (max-width: 640px) {
+      .kegiatan-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay"><div class="spinner"></div></div>
+  <div id="toast-container"></div>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">🏥</div>
+          <div class="sidebar-logo-text"><h1>PMR Wira</h1><span>SMK IBG 3</span></div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Utama</div>
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">⊞</span><span>Dashboard</span></a>
+        <div class="nav-section-label">Manajemen</div>
+        <a href="anggota.html" class="nav-item"><span class="nav-icon">👥</span><span>Data Anggota</span></a>
+        <a href="inventaris.html" class="nav-item"><span class="nav-icon">📦</span><span>Inventaris</span></a>
+        <a href="kegiatan.html" class="nav-item active"><span class="nav-icon">📅</span><span>Kegiatan</span></a>
+        <a href="pengumuman.html" class="nav-item"><span class="nav-icon">📢</span><span>Pengumuman</span></a>
+      </nav>
+      <div class="sidebar-user">
+        <div class="sidebar-user-info">
+          <div class="user-avatar" id="user-avatar">?</div>
+          <div class="user-details">
+            <div class="user-name" id="user-name">Memuat...</div>
+            <div class="user-role" id="user-role">—</div>
+          </div>
+          <button class="btn-logout" onclick="handleLogout()" title="Keluar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="sidebar-toggle btn-icon btn-outline" id="sidebar-toggle">☰</button>
+          <div class="page-header-left">
+            <h2>Kegiatan PMR</h2>
+            <p>Jadwal dan dokumentasi kegiatan PMR Wira SMK IBG 3</p>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-tambah" onclick="openModal()">+ Tambah Kegiatan</button>
+      </div>
+
+      <div class="page-body">
+
+        <!-- Stats -->
+        <div class="stat-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:24px">
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-blue">📅</div>
+            <div class="stat-info">
+              <div class="stat-label">Total Kegiatan</div>
+              <div class="stat-value" id="stat-total">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-yellow">🗓️</div>
+            <div class="stat-info">
+              <div class="stat-label">Direncanakan</div>
+              <div class="stat-value" id="stat-rencana">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-green">▶️</div>
+            <div class="stat-info">
+              <div class="stat-label">Berlangsung</div>
+              <div class="stat-value" id="stat-berlangsung">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-red">✅</div>
+            <div class="stat-info">
+              <div class="stat-label">Selesai</div>
+              <div class="stat-value" id="stat-selesai">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Toolbar -->
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px">
+          <div class="toolbar" style="margin-bottom:0;flex:1">
+            <div class="search-box">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="search-kegiatan" placeholder="Cari kegiatan..." oninput="filterKegiatan()" />
+            </div>
+            <select class="filter-select" id="filter-tahun" onchange="filterKegiatan()">
+              <option value="">Semua Tahun</option>
+            </select>
+          </div>
+          <div class="view-toggle">
+            <button class="view-btn active" id="view-grid" onclick="switchView('grid')">⊞ Kartu</button>
+            <button class="view-btn" id="view-list" onclick="switchView('list')">☰ Daftar</button>
+          </div>
+        </div>
+
+        <!-- Status Tabs -->
+        <div class="status-tabs">
+          <button class="status-tab active" id="tab-semua" onclick="switchStatusTab('semua')">Semua</button>
+          <button class="status-tab" id="tab-direncanakan" onclick="switchStatusTab('Direncanakan')">Direncanakan</button>
+          <button class="status-tab" id="tab-berlangsung" onclick="switchStatusTab('Berlangsung')">Berlangsung</button>
+          <button class="status-tab" id="tab-selesai" onclick="switchStatusTab('Selesai')">Selesai</button>
+          <button class="status-tab" id="tab-dibatalkan" onclick="switchStatusTab('Dibatalkan')">Dibatalkan</button>
+        </div>
+
+        <!-- Grid View -->
+        <div id="view-grid-panel">
+          <div class="kegiatan-grid" id="kegiatan-grid">
+            <!-- diisi JS -->
+          </div>
+          <div id="kegiatan-empty" style="display:none">
+            <div class="empty-state">
+              <div class="empty-icon">📅</div>
+              <h3>Belum ada kegiatan</h3>
+              <p>Tambahkan kegiatan PMR pertama.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- List View -->
+        <div id="view-list-panel" style="display:none">
+          <div class="card">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nama Kegiatan</th>
+                    <th>Tanggal Mulai</th>
+                    <th>Tanggal Selesai</th>
+                    <th>Lokasi</th>
+                    <th>Status</th>
+                    <th style="text-align:right">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody id="kegiatan-tbody"></tbody>
+              </table>
+            </div>
+            <div style="padding:14px 20px;border-top:1px solid var(--gray-100);font-size:13px;color:var(--gray-500)" id="kegiatan-info">0 kegiatan</div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Tambah/Edit Kegiatan -->
+  <div class="modal-backdrop" id="modal-kegiatan">
+    <div class="modal" style="max-width:580px">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">Tambah Kegiatan</span>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-kegiatan" onsubmit="submitForm(event)">
+          <input type="hidden" id="field-id" />
+
+          <div class="form-group">
+            <label class="form-label">Nama Kegiatan <span class="required">*</span></label>
+            <input class="form-control" type="text" id="field-nama" placeholder="Contoh: Latihan Rutin Pertolongan Pertama" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Deskripsi</label>
+            <textarea class="form-control" id="field-deskripsi" rows="3" placeholder="Deskripsi singkat kegiatan..."></textarea>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Tanggal Mulai <span class="required">*</span></label>
+              <input class="form-control" type="date" id="field-tgl-mulai" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Tanggal Selesai</label>
+              <input class="form-control" type="date" id="field-tgl-selesai" />
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Lokasi</label>
+              <input class="form-control" type="text" id="field-lokasi" placeholder="Aula SMK IBG 3" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Status <span class="required">*</span></label>
+              <select class="form-control" id="field-status" required>
+                <option>Direncanakan</option>
+                <option>Berlangsung</option>
+                <option>Selesai</option>
+                <option>Dibatalkan</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Link Dokumentasi</label>
+            <input class="form-control" type="url" id="field-dok" placeholder="https://drive.google.com/..." />
+            <div class="form-hint">Google Drive, Google Photos, atau URL lainnya</div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" onclick="submitForm(event)">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Detail Kegiatan -->
+  <div class="modal-backdrop" id="modal-detail">
+    <div class="modal" style="max-width:580px">
+      <div class="modal-header">
+        <span class="modal-title">Detail Kegiatan</span>
+        <button class="modal-close" onclick="closeDetail()">×</button>
+      </div>
+      <div class="modal-body" id="modal-detail-body">
+        <!-- diisi JS -->
+      </div>
+      <div class="modal-footer" id="modal-detail-footer">
+        <button class="btn btn-outline" onclick="closeDetail()">Tutup</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Konfirmasi Hapus -->
+  <div class="modal-backdrop" id="modal-confirm">
+    <div class="modal confirm-dialog">
+      <div class="modal-body">
+        <div class="confirm-dialog-icon">🗑️</div>
+        <h3>Hapus Kegiatan?</h3>
+        <p>Kegiatan <strong id="confirm-nama"></strong> akan dihapus permanen.</p>
+      </div>
+      <div class="modal-footer" style="justify-content:center">
+        <button class="btn btn-outline" onclick="closeConfirm()">Batal</button>
+        <button class="btn btn-danger" id="btn-confirm-delete" onclick="confirmDelete()">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/kegiatan.js"></script>
+</body>
+</html>

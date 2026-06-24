@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Anggota — PMR Wira SMK IBG 3</title>
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+
+  <div id="loading-overlay"><div class="spinner"></div></div>
+  <div id="toast-container"></div>
+  <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon">🏥</div>
+          <div class="sidebar-logo-text">
+            <h1>PMR Wira</h1>
+            <span>SMK IBG 3</span>
+          </div>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-section-label">Utama</div>
+        <a href="dashboard.html" class="nav-item"><span class="nav-icon">⊞</span><span>Dashboard</span></a>
+        <div class="nav-section-label">Manajemen</div>
+        <a href="anggota.html" class="nav-item active"><span class="nav-icon">👥</span><span>Data Anggota</span></a>
+        <a href="inventaris.html" class="nav-item"><span class="nav-icon">📦</span><span>Inventaris</span></a>
+        <a href="kegiatan.html" class="nav-item"><span class="nav-icon">📅</span><span>Kegiatan</span></a>
+        <a href="pengumuman.html" class="nav-item"><span class="nav-icon">📢</span><span>Pengumuman</span></a>
+      </nav>
+      <div class="sidebar-user">
+        <div class="sidebar-user-info">
+          <div class="user-avatar" id="user-avatar">?</div>
+          <div class="user-details">
+            <div class="user-name" id="user-name">Memuat...</div>
+            <div class="user-role" id="user-role">—</div>
+          </div>
+          <button class="btn-logout" onclick="handleLogout()" title="Keluar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main-content">
+      <div class="page-header">
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="sidebar-toggle btn-icon btn-outline" id="sidebar-toggle">☰</button>
+          <div class="page-header-left">
+            <h2>Data Anggota</h2>
+            <p>Kelola seluruh anggota PMR Wira SMK IBG 3</p>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="btn-tambah" onclick="openModal()">
+          + Tambah Anggota
+        </button>
+      </div>
+
+      <div class="page-body">
+
+        <!-- Stat Mini -->
+        <div class="stat-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:24px">
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-red">👥</div>
+            <div class="stat-info">
+              <div class="stat-label">Total Anggota</div>
+              <div class="stat-value" id="stat-total">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-green">✅</div>
+            <div class="stat-info">
+              <div class="stat-label">Aktif</div>
+              <div class="stat-value" id="stat-aktif">—</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon-wrap stat-icon-yellow">⏸</div>
+            <div class="stat-info">
+              <div class="stat-label">Tidak Aktif</div>
+              <div class="stat-value" id="stat-nonaktif">—</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabel -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Daftar Anggota</span>
+          </div>
+          <div style="padding:16px 20px;border-bottom:1px solid var(--gray-100)">
+            <div class="toolbar" style="margin-bottom:0">
+              <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="search-input" placeholder="Cari nama, kelas, nomor anggota..." oninput="filterTable()" />
+              </div>
+              <select class="filter-select" id="filter-status" onchange="filterTable()">
+                <option value="">Semua Status</option>
+                <option value="true">Aktif</option>
+                <option value="false">Tidak Aktif</option>
+              </select>
+              <select class="filter-select" id="filter-jabatan" onchange="filterTable()">
+                <option value="">Semua Jabatan</option>
+                <option>Ketua</option>
+                <option>Wakil Ketua</option>
+                <option>Sekretaris</option>
+                <option>Bendahara</option>
+                <option>Anggota</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-wrapper">
+            <table class="data-table" id="anggota-table">
+              <thead>
+                <tr>
+                  <th>No. Anggota</th>
+                  <th>Nama</th>
+                  <th>Kelas</th>
+                  <th>Jabatan</th>
+                  <th>Status</th>
+                  <th>No. HP</th>
+                  <th style="text-align:right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="anggota-tbody">
+                <tr>
+                  <td colspan="7">
+                    <div class="empty-state"><div class="empty-icon">⏳</div><p>Memuat data...</p></div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="padding:14px 20px;border-top:1px solid var(--gray-100);font-size:13px;color:var(--gray-500)" id="table-info">
+            Menampilkan 0 anggota
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================
+       MODAL TAMBAH / EDIT ANGGOTA
+  ============================================================ -->
+  <div class="modal-backdrop" id="modal-anggota">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title">Tambah Anggota</span>
+        <button class="modal-close" onclick="closeModal()">×</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-anggota" onsubmit="submitForm(event)">
+          <input type="hidden" id="field-id" />
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Nomor Anggota <span class="required">*</span></label>
+              <input class="form-control" type="text" id="field-nomor" placeholder="PMR-001" required />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kelas <span class="required">*</span></label>
+              <input class="form-control" type="text" id="field-kelas" placeholder="X TKJ 1" required />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Nama Lengkap <span class="required">*</span></label>
+            <input class="form-control" type="text" id="field-nama" placeholder="Nama lengkap anggota" required />
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label class="form-label">Jabatan <span class="required">*</span></label>
+              <select class="form-control" id="field-jabatan" required>
+                <option value="">Pilih jabatan</option>
+                <option>Ketua</option>
+                <option>Wakil Ketua</option>
+                <option>Sekretaris</option>
+                <option>Bendahara</option>
+                <option>Koordinator Bidang</option>
+                <option>Anggota</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">No. HP</label>
+              <input class="form-control" type="tel" id="field-nohp" placeholder="08xxxxxxxxxx" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Alamat</label>
+            <textarea class="form-control" id="field-alamat" rows="2" placeholder="Alamat lengkap (opsional)"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+              <input type="checkbox" id="field-aktif" checked style="width:16px;height:16px;accent-color:var(--red-600)" />
+              <span class="form-label" style="margin:0">Status Aktif</span>
+            </label>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal()">Batal</button>
+        <button class="btn btn-primary" onclick="submitForm(event)" id="btn-submit">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Konfirmasi Hapus -->
+  <div class="modal-backdrop" id="modal-confirm">
+    <div class="modal confirm-dialog">
+      <div class="modal-body">
+        <div class="confirm-dialog-icon">🗑️</div>
+        <h3>Hapus Anggota?</h3>
+        <p>Data anggota <strong id="confirm-nama"></strong> akan dihapus permanen dan tidak dapat dikembalikan.</p>
+      </div>
+      <div class="modal-footer" style="justify-content:center">
+        <button class="btn btn-outline" onclick="closeConfirm()">Batal</button>
+        <button class="btn btn-danger" id="btn-confirm-delete" onclick="confirmDelete()">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/supabase.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/anggota.js"></script>
+</body>
+</html>
